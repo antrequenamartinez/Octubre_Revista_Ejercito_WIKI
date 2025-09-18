@@ -15,7 +15,7 @@
 3.3 [Interfaz de Usuario](3.3.-Interfaz-de-Usuario)  
 4. [Definición del MVP](4.-MVP)  
 4.1 [Product Backlog](4.1.-Product-Backlog)  
-4.2 [Historias de Usuario](4.2.-Historias-de-Usuario) 
+4.2 [Historias de Usuarios](4.2.-Historias-de-Usuarios) 
 5. Sprint 1                                             
 5.1 [Sprint Planning](5.1.-Sprint-Planning)                                
 5.2 [Sprint Review](5.2.-Sprint-Review)                            
