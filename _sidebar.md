@@ -3,7 +3,7 @@
 2. Estudio de viabilidad del sistema  
 2.1 [Requisitos](2.1.-Requisitos)  
 2.2 [Mind Map](2.2.-Mind-Map)  
-2.3 [Estudio de Alternativas](2.3.-Alternativas)  
+2.3 [Estudio de Alternativas](2.3.-Estudio-de-Alternativas)  
 2.4 [Matriz de Cumplimento de Requisitos-Alternativas](2.4.-Matriz-de-cumplimiento)  
 2.5 [Matriz de decisión](2.5.-Matriz-de-decision)  
 3. Especificación de Requisitos del Software   
