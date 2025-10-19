@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Defs_AsIs_DI" targetNamespace="http://revista-ejercito/as-is/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.6.1">
+  <bpmn:collaboration id="Collab_AsIs">
+    <bpmn:participant id="Part_Autor" name="Autor" processRef="Proc_Autor" />
+    <bpmn:participant id="Part_Redaccion" name="Redacción" processRef="Proc_Redaccion" />
+    <bpmn:participant id="Part_Consejero" name="Consejero" processRef="Proc_Consejero" />
+    <bpmn:participant id="Part_Suscriptor" name="Suscriptor" processRef="Proc_Suscriptor" />
+    <bpmn:participant id="Part_Fact" name="Facturación (externo)" processRef="Proc_Facturacion" />
+    <bpmn:participant id="Participant_018r8qj" name="Distribuidor" processRef="Process_0sg0brf" />
+    <bpmn:messageFlow id="MF_A_R" name="Artículo + anexos" sourceRef="A_SendEmail" targetRef="R_Start" />
+    <bpmn:messageFlow id="MF_R_C" name="Correo: manuscrito anonimizado" sourceRef="R_EnviarAnon" targetRef="C_Recibir" />
+    <bpmn:messageFlow id="MF_C_R" name="Correo: informe + nota" sourceRef="C_EnviarInforme" targetRef="R_RegistrarEval" />
+    <bpmn:messageFlow id="MF_S_R" name="Solicitud suscripción" sourceRef="S_EnviarDatos" targetRef="R_RegSuscriptor" />
+    <bpmn:messageFlow id="Flow_09gicw5" name="Traslado manual de datos bancarios" sourceRef="R_ConsultarPagos" targetRef="F_GestionPagos" />
+  </bpmn:collaboration>
+  <bpmn:process id="Proc_Autor" isExecutable="false">
+    <bpmn:sequenceFlow id="A_F1" sourceRef="A_Start" targetRef="A_SendEmail" />
+    <bpmn:sequenceFlow id="A_F2" sourceRef="A_SendEmail" targetRef="A_End" />
+    <bpmn:startEvent id="A_Start" name="Inicio (Autor)" />
+    <bpmn:userTask id="A_SendEmail" name="Enviar artículo y anexos">
+      <bpmn:incoming>A_F1</bpmn:incoming>
+      <bpmn:outgoing>A_F2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="A_End" name="Fin (Autor)" />
+  </bpmn:process>
+  <bpmn:process id="Proc_Redaccion" isExecutable="false">
+    <bpmn:sequenceFlow id="R_F1" sourceRef="R_Start" targetRef="R_Alta" />
+    <bpmn:sequenceFlow id="R_F2" sourceRef="R_Alta" targetRef="R_RegConsejeros" />
+    <bpmn:sequenceFlow id="R_F3" sourceRef="R_RegConsejeros" targetRef="R_Asignar" />
+    <bpmn:sequenceFlow id="R_F4" sourceRef="R_Asignar" targetRef="R_Anon" />
+    <bpmn:sequenceFlow id="R_F5" sourceRef="R_Anon" targetRef="R_EnviarAnon" />
+    <bpmn:sequenceFlow id="R_F7B" sourceRef="R_G_Evals" targetRef="R_RegistrarEval">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!completas}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="R_F6" sourceRef="R_RegistrarEval" targetRef="R_G_Evals" />
+    <bpmn:sequenceFlow id="R_F7A" sourceRef="R_G_Evals" targetRef="R_Preseleccion">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${completas}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="R_F8" sourceRef="R_Preseleccion" targetRef="R_AsignarNumero" />
+    <bpmn:sequenceFlow id="R_F9" sourceRef="R_AsignarNumero" targetRef="R_EtiquetasCortesia" />
+    <bpmn:sequenceFlow id="Flow_1adxm2f" sourceRef="R_EtiquetasCortesia" targetRef="R_End" />
+    <bpmn:sequenceFlow id="Flow_0hmjp8s" sourceRef="R_EnviarAnon" targetRef="R_RegistrarEval" />
+    <bpmn:userTask id="R_RegistrarEval" name="Registrar evaluación (nota/ recomendación)">
+      <bpmn:incoming>R_F7B</bpmn:incoming>
+      <bpmn:incoming>Flow_0hmjp8s</bpmn:incoming>
+      <bpmn:outgoing>R_F6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="R_Alta" name="Alta de artículo y autor/es">
+      <bpmn:incoming>R_F1</bpmn:incoming>
+      <bpmn:outgoing>R_F2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:startEvent id="R_Start" name="Recepción de correo" />
+    <bpmn:userTask id="R_RegConsejeros" name="Mantener registro de consejeros">
+      <bpmn:incoming>R_F2</bpmn:incoming>
+      <bpmn:outgoing>R_F3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="R_Asignar" name="Asignar consejeros por artículo">
+      <bpmn:incoming>R_F3</bpmn:incoming>
+      <bpmn:outgoing>R_F4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="R_Anon" name="Anonimizar manuscrito">
+      <bpmn:incoming>R_F4</bpmn:incoming>
+      <bpmn:outgoing>R_F5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sendTask id="R_EnviarAnon" name="Enviar manuscrito anonimizado">
+      <bpmn:incoming>R_F5</bpmn:incoming>
+      <bpmn:outgoing>Flow_0hmjp8s</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:exclusiveGateway id="R_G_Evals" name="¿Todas las evaluaciones registradas?" />
+    <bpmn:userTask id="R_Preseleccion" name="Preseleccionar artículos">
+      <bpmn:incoming>R_F7A</bpmn:incoming>
+      <bpmn:outgoing>R_F8</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="R_EtiquetasCortesia" name="Etiquetas envío (cortesía)">
+      <bpmn:incoming>R_F9</bpmn:incoming>
+      <bpmn:outgoing>Flow_1adxm2f</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="R_End" name="Fin (Redacción)">
+      <bpmn:incoming>Flow_1adxm2f</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="R_AsignarNumero" name="Asignar N° de Revista">
+      <bpmn:incoming>R_F8</bpmn:incoming>
+      <bpmn:outgoing>R_F9</bpmn:outgoing>
+    </bpmn:userTask>
+  </bpmn:process>
+  <bpmn:process id="Proc_Consejero" isExecutable="false">
+    <bpmn:sequenceFlow id="C_F1" sourceRef="C_Start" targetRef="C_Recibir" />
+    <bpmn:sequenceFlow id="C_F2" sourceRef="C_Recibir" targetRef="C_Evaluar" />
+    <bpmn:sequenceFlow id="C_F3" sourceRef="C_Evaluar" targetRef="C_EnviarInforme" />
+    <bpmn:sequenceFlow id="C_F4" sourceRef="C_EnviarInforme" targetRef="C_End" />
+    <bpmn:userTask id="C_Recibir" name="Recibir manuscrito anonimizado (correo)">
+      <bpmn:incoming>C_F1</bpmn:incoming>
+      <bpmn:outgoing>C_F2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="C_Evaluar" name="Evaluar y redactar informe">
+      <bpmn:incoming>C_F2</bpmn:incoming>
+      <bpmn:outgoing>C_F3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sendTask id="C_EnviarInforme" name="Enviar informe (correo)">
+      <bpmn:incoming>C_F3</bpmn:incoming>
+      <bpmn:outgoing>C_F4</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="C_End" name="Fin (Consejero)" />
+    <bpmn:startEvent id="C_Start" name="Inicio (Consejero)" />
+  </bpmn:process>
+  <bpmn:process id="Proc_Suscriptor" isExecutable="false">
+    <bpmn:userTask id="S_EnviarDatos" name="Enviar datos/solicitud">
+      <bpmn:incoming>S_F1</bpmn:incoming>
+      <bpmn:outgoing>Flow_0pzdpcq</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:startEvent id="S_Start" name="Inicio (Suscriptor)" />
+    <bpmn:endEvent id="S_End" name="Fin (Suscriptor)">
+      <bpmn:incoming>Flow_0pzdpcq</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="S_F1" sourceRef="S_Start" targetRef="S_EnviarDatos" />
+    <bpmn:sequenceFlow id="Flow_0pzdpcq" sourceRef="S_EnviarDatos" targetRef="S_End" />
+  </bpmn:process>
+  <bpmn:process id="Proc_Facturacion" isExecutable="false">
+    <bpmn:startEvent id="F_Start" name="Inicio (Facturación)" />
+    <bpmn:userTask id="F_GestionPagos" name="Gestionar facturación / pagos (otro sistema)">
+      <bpmn:incoming>F_F1</bpmn:incoming>
+      <bpmn:outgoing>Flow_1yfooko</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="F_End" name="Fin (Facturación)">
+      <bpmn:incoming>Flow_1yfooko</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F_F1" sourceRef="F_Start" targetRef="F_GestionPagos" />
+    <bpmn:sequenceFlow id="Flow_1yfooko" sourceRef="F_GestionPagos" targetRef="F_End" />
+  </bpmn:process>
+  <bpmn:process id="Process_0sg0brf" isExecutable="false">
+    <bpmn:startEvent id="Event_0qznpzu" name="Inicio (Distribuidor)">
+      <bpmn:outgoing>Flow_03i6zuf</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_03i6zuf" sourceRef="Event_0qznpzu" targetRef="R_RegSuscriptor" />
+    <bpmn:sequenceFlow id="Flow_00zduvu" sourceRef="R_RegSuscriptor" targetRef="R_ConsultarPagos" />
+    <bpmn:sequenceFlow id="Flow_1cavpjy" sourceRef="R_PrepararEtiquetasSus" targetRef="R_ConsultarPagos" />
+    <bpmn:sequenceFlow id="Flow_1tuobyn" sourceRef="R_ConsultarPagos" targetRef="R_PrepararEtiquetasSus" />
+    <bpmn:userTask id="R_RegSuscriptor" name="Registrar suscriptores/suscripciones">
+      <bpmn:incoming>Flow_03i6zuf</bpmn:incoming>
+      <bpmn:outgoing>Flow_00zduvu</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="R_ConsultarPagos" name="Consultar pagos en sistema externo">
+      <bpmn:incoming>Flow_00zduvu</bpmn:incoming>
+      <bpmn:incoming>Flow_1cavpjy</bpmn:incoming>
+      <bpmn:outgoing>Flow_1tuobyn</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="R_PrepararEtiquetasSus" name="Etiquetas por suscripción activa">
+      <bpmn:incoming>Flow_1tuobyn</bpmn:incoming>
+      <bpmn:outgoing>Flow_1cavpjy</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0xehrrb</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0xehrrb" sourceRef="R_PrepararEtiquetasSus" targetRef="Event_0qyyys2" />
+    <bpmn:endEvent id="Event_0qyyys2" name="Fin (Distribuidor)">
+      <bpmn:incoming>Flow_0xehrrb</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="DI_AsIs">
+    <bpmndi:BPMNPlane id="Plane_AsIs" bpmnElement="Collab_AsIs">
+      <bpmndi:BPMNShape id="DI_Part_Autor" bpmnElement="Part_Autor" isHorizontal="true">
+        <omgdc:Bounds x="120" y="40" width="320" height="160" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_A_Start" bpmnElement="A_Start">
+        <omgdc:Bounds x="172" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="159" y="143" width="63" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0obr398_di" bpmnElement="A_SendEmail">
+        <omgdc:Bounds x="250" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_A_End" bpmnElement="A_End">
+        <omgdc:Bounds x="382" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="374" y="143" width="53" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="DI_A_F1" bpmnElement="A_F1">
+        <omgdi:waypoint x="208" y="120" />
+        <omgdi:waypoint x="250" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_A_F2" bpmnElement="A_F2">
+        <omgdi:waypoint x="350" y="120" />
+        <omgdi:waypoint x="382" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="DI_Part_Redaccion" bpmnElement="Part_Redaccion" isHorizontal="true">
+        <omgdc:Bounds x="120" y="210" width="860" height="380" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1z12e7s_di" bpmnElement="R_RegistrarEval">
+        <omgdc:Bounds x="240" y="410" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1io3idh_di" bpmnElement="R_Alta">
+        <omgdc:Bounds x="240" y="238" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_R_Start" bpmnElement="R_Start">
+        <omgdc:Bounds x="180" y="260" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="164" y="306" width="68" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0h5qt3n_di" bpmnElement="R_RegConsejeros">
+        <omgdc:Bounds x="393" y="238" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0tyv44d_di" bpmnElement="R_Asignar">
+        <omgdc:Bounds x="530" y="238" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0yp7tmz_di" bpmnElement="R_Anon">
+        <omgdc:Bounds x="670" y="238" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1yhnbia_di" bpmnElement="R_EnviarAnon">
+        <omgdc:Bounds x="820" y="238" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_R_G_Evals" bpmnElement="R_G_Evals" isMarkerVisible="true">
+        <omgdc:Bounds x="375" y="425" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="368" y="475" width="65" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1vvvafn_di" bpmnElement="R_Preseleccion">
+        <omgdc:Bounds x="460" y="420" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_19iu4vm_di" bpmnElement="R_EtiquetasCortesia">
+        <omgdc:Bounds x="740" y="420" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_R_End" bpmnElement="R_End">
+        <omgdc:Bounds x="892" y="442" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="871" y="483" width="78" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_09rxb3u_di" bpmnElement="R_AsignarNumero">
+        <omgdc:Bounds x="600" y="420" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="DI_R_F1" bpmnElement="R_F1">
+        <omgdi:waypoint x="216" y="278" />
+        <omgdi:waypoint x="240" y="278" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_R_F2" bpmnElement="R_F2">
+        <omgdi:waypoint x="340" y="278" />
+        <omgdi:waypoint x="393" y="278" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_R_F3" bpmnElement="R_F3">
+        <omgdi:waypoint x="493" y="278" />
+        <omgdi:waypoint x="530" y="278" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_R_F4" bpmnElement="R_F4">
+        <omgdi:waypoint x="630" y="268" />
+        <omgdi:waypoint x="670" y="268" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_R_F5" bpmnElement="R_F5">
+        <omgdi:waypoint x="770" y="268" />
+        <omgdi:waypoint x="820" y="268" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_R_F7B" bpmnElement="R_F7B">
+        <omgdi:waypoint x="400" y="425" />
+        <omgdi:waypoint x="400" y="370" />
+        <omgdi:waypoint x="294" y="370" />
+        <omgdi:waypoint x="294" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_R_F6" bpmnElement="R_F6">
+        <omgdi:waypoint x="340" y="450" />
+        <omgdi:waypoint x="375" y="450" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_R_F7A" bpmnElement="R_F7A">
+        <omgdi:waypoint x="425" y="450" />
+        <omgdi:waypoint x="460" y="450" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_R_F8" bpmnElement="R_F8">
+        <omgdi:waypoint x="560" y="460" />
+        <omgdi:waypoint x="600" y="460" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_R_F9" bpmnElement="R_F9">
+        <omgdi:waypoint x="700" y="460" />
+        <omgdi:waypoint x="740" y="460" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1adxm2f_di" bpmnElement="Flow_1adxm2f">
+        <omgdi:waypoint x="840" y="460" />
+        <omgdi:waypoint x="892" y="460" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0hmjp8s_di" bpmnElement="Flow_0hmjp8s">
+        <omgdi:waypoint x="870" y="318" />
+        <omgdi:waypoint x="870" y="340" />
+        <omgdi:waypoint x="180" y="340" />
+        <omgdi:waypoint x="180" y="450" />
+        <omgdi:waypoint x="240" y="450" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="DI_Part_Consejero" bpmnElement="Part_Consejero" isHorizontal="true">
+        <omgdc:Bounds x="120" y="660" width="610" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ifavwe_di" bpmnElement="C_Recibir">
+        <omgdc:Bounds x="240" y="690" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_03urpl9_di" bpmnElement="C_Evaluar">
+        <omgdc:Bounds x="380" y="690" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ws7foe_di" bpmnElement="C_EnviarInforme">
+        <omgdc:Bounds x="520" y="690" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_C_End" bpmnElement="C_End">
+        <omgdc:Bounds x="652" y="712" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="632" y="755" width="77" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_C_Start" bpmnElement="C_Start">
+        <omgdc:Bounds x="180" y="712" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="154" y="755" width="87" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="DI_C_F1" bpmnElement="C_F1">
+        <omgdi:waypoint x="216" y="730" />
+        <omgdi:waypoint x="240" y="730" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_C_F2" bpmnElement="C_F2">
+        <omgdi:waypoint x="340" y="730" />
+        <omgdi:waypoint x="380" y="730" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_C_F3" bpmnElement="C_F3">
+        <omgdi:waypoint x="480" y="730" />
+        <omgdi:waypoint x="520" y="730" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_C_F4" bpmnElement="C_F4">
+        <omgdi:waypoint x="620" y="731" />
+        <omgdi:waypoint x="652" y="731" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="BPMNShape_0k2tnj9" bpmnElement="Participant_018r8qj" isHorizontal="true">
+        <omgdc:Bounds x="120" y="810" width="610" height="140" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0tnis7b" bpmnElement="Event_0qznpzu">
+        <omgdc:Bounds x="180" y="850" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="166" y="896" width="64" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1qqg3s3_di" bpmnElement="R_RegSuscriptor">
+        <omgdc:Bounds x="250" y="838" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_02g4n8i_di" bpmnElement="R_ConsultarPagos">
+        <omgdc:Bounds x="380" y="838" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_14jr121_di" bpmnElement="R_PrepararEtiquetasSus">
+        <omgdc:Bounds x="520" y="838" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0xzrlqg" bpmnElement="Event_0qyyys2">
+        <omgdc:Bounds x="652" y="860" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="629" y="901" width="82" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_03i6zuf_di" bpmnElement="Flow_03i6zuf">
+        <omgdi:waypoint x="216" y="868" />
+        <omgdi:waypoint x="250" y="868" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_00zduvu_di" bpmnElement="Flow_00zduvu">
+        <omgdi:waypoint x="350" y="878" />
+        <omgdi:waypoint x="380" y="878" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1cavpjy_di" bpmnElement="Flow_1cavpjy">
+        <omgdi:waypoint x="570" y="838" />
+        <omgdi:waypoint x="570" y="818" />
+        <omgdi:waypoint x="430" y="818" />
+        <omgdi:waypoint x="430" y="838" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1tuobyn_di" bpmnElement="Flow_1tuobyn">
+        <omgdi:waypoint x="480" y="878" />
+        <omgdi:waypoint x="520" y="878" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0xehrrb_di" bpmnElement="Flow_0xehrrb">
+        <omgdi:waypoint x="620" y="878" />
+        <omgdi:waypoint x="652" y="878" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="DI_Part_Suscriptor" bpmnElement="Part_Suscriptor" isHorizontal="true">
+        <omgdc:Bounds x="115" y="990" width="350" height="120" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_17b8sqf_di" bpmnElement="S_EnviarDatos">
+        <omgdc:Bounds x="245" y="1010" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_S_Start" bpmnElement="S_Start">
+        <omgdc:Bounds x="175" y="1032" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="150" y="1075" width="86" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_S_End" bpmnElement="S_End">
+        <omgdc:Bounds x="377" y="1032" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="357" y="1075" width="76" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="DI_S_F1" bpmnElement="S_F1">
+        <omgdi:waypoint x="211" y="1050" />
+        <omgdi:waypoint x="245" y="1050" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0pzdpcq_di" bpmnElement="Flow_0pzdpcq">
+        <omgdi:waypoint x="345" y="1050" />
+        <omgdi:waypoint x="377" y="1050" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="DI_Part_Fact" bpmnElement="Part_Fact" isHorizontal="true">
+        <omgdc:Bounds x="115" y="1152" width="350" height="120" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_F_Start" bpmnElement="F_Start">
+        <omgdc:Bounds x="175" y="1182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="160" y="1228" width="66" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1s8286l_di" bpmnElement="F_GestionPagos">
+        <omgdc:Bounds x="245" y="1160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_F_End" bpmnElement="F_End">
+        <omgdc:Bounds x="377" y="1182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="353" y="1225" width="84" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="DI_F_F1" bpmnElement="F_F1">
+        <omgdi:waypoint x="211" y="1200" />
+        <omgdi:waypoint x="245" y="1200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1yfooko_di" bpmnElement="Flow_1yfooko">
+        <omgdi:waypoint x="345" y="1200" />
+        <omgdi:waypoint x="377" y="1200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_MF_A_R" bpmnElement="MF_A_R">
+        <omgdi:waypoint x="300" y="163" />
+        <omgdi:waypoint x="300" y="220" />
+        <omgdi:waypoint x="198" y="220" />
+        <omgdi:waypoint x="198" y="260" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="308" y="177" width="85" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_MF_R_C" bpmnElement="MF_R_C">
+        <omgdi:waypoint x="920" y="278" />
+        <omgdi:waypoint x="960" y="278" />
+        <omgdi:waypoint x="960" y="630" />
+        <omgdi:waypoint x="290" y="630" />
+        <omgdi:waypoint x="290" y="690" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="888" y="370" width="63" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_MF_C_R" bpmnElement="MF_C_R">
+        <omgdi:waypoint x="570" y="690" />
+        <omgdi:waypoint x="570" y="610" />
+        <omgdi:waypoint x="290" y="610" />
+        <omgdi:waypoint x="290" y="490" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="196" y="526" width="87" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_MF_S_R" bpmnElement="MF_S_R">
+        <omgdi:waypoint x="295" y="1010" />
+        <omgdi:waypoint x="295" y="918" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="302" y="956" width="56" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_09gicw5_di" bpmnElement="Flow_09gicw5">
+        <omgdi:waypoint x="450" y="918" />
+        <omgdi:waypoint x="450" y="1130" />
+        <omgdi:waypoint x="295" y="1130" />
+        <omgdi:waypoint x="295" y="1160" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="464" y="1121.9999999999998" width="82" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
